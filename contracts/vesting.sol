@@ -3,11 +3,11 @@ pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./TransferHelper.sol";
 
 
-contract VestingContract is Ownable, ReentrancyGuard{
+contract vesting is Ownable, ReentrancyGuard{
     IERC20 public token;
     address public Owner;
     address public teamAddress;
@@ -67,8 +67,8 @@ contract VestingContract is Ownable, ReentrancyGuard{
         interval: 7 days // Weekly
     });
 
-    constructor(IERC20 _token, address _teamAddress, address _advisorAddress, address _privateInvestorAddress, address _seedInvestorAddress, address _preSeedInvestorAddress) Ownable(msg.sender) {
-        token = _token;
+    constructor(address _token, address _teamAddress, address _advisorAddress, address _privateInvestorAddress, address _seedInvestorAddress, address _preSeedInvestorAddress) Ownable(msg.sender) {
+        token = IERC20(_token);
         teamAddress = _teamAddress;
         advisorAddress = _advisorAddress;
         privateInvestorAddress = _privateInvestorAddress;
