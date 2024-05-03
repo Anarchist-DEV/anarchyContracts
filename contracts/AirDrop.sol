@@ -11,13 +11,15 @@ interface IERC1155 {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
 }
 
-contract AirDrop {
+import "./ReentrancyGuard.sol";
+
+contract AirDrop is ReentrancyGuard{
     address public Owner;
     constructor() {
         Owner = msg.sender;
     }
 
-    function bulkAirDropERC20(address _token, address[] calldata _to, uint256[] calldata _value) public {
+    function bulkAirDropERC20(address _token, address[] calldata _to, uint256[] calldata _value) public nonReentrant{
         require(msg.sender == Owner,"only owner can call these function");
         IERC20 token = IERC20(_token);
         require(_to.length == _value.length, "Receivers and amounts are different length!");
@@ -26,7 +28,7 @@ contract AirDrop {
         }
     }
 
-    function bulkAirDrop1155(address _token, address[] calldata _to, uint256[] calldata _value, uint256[] calldata _amount) public {
+    function bulkAirDrop1155(address _token, address[] calldata _to, uint256[] calldata _value, uint256[] calldata _amount) public nonReentrant {
         require(msg.sender == Owner,"only owner can call these function");
         IERC1155 token = IERC1155 (_token);
         require(_to.length == _value.length, "Receivers and amounts are different length!");
