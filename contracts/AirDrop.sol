@@ -7,10 +7,6 @@ interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
 }
 
-interface IERC721 {
-    function safeTransferFrom(address from, address to, uint256 tokenId) external;
-}
-
 interface IERC1155 {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
 }
