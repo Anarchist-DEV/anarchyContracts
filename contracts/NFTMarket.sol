@@ -4,19 +4,19 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 
-contract NFTMarket is  ERC1155Holder{
+
+contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
     // using Counters for Counters.Counter;
     uint256 private _itemIds;
     uint256 private _itemsSold;
     
-     address public owner;
      
-     constructor() {
-         owner = msg.sender;
-     }
-     
+    constructor() {}
+
      
      struct MarketItem {
          uint itemId;
@@ -49,12 +49,12 @@ contract NFTMarket is  ERC1155Holder{
      
     
     
-    function createMarketItem(
+    function createMarketItem (
         address nftContract,
         uint256 tokenId,
         uint256 amount,
         uint256 price
-        ) public payable {
+        ) public payable nonReentrant {
             require(price > 0, "Price must be greater than 0");
             
             _itemIds = _itemIds +1;
@@ -83,11 +83,11 @@ contract NFTMarket is  ERC1155Holder{
             );
         }
         
-    function createMarketSale(
+    function createMarketSaleInEth (
         address nftContract,
         uint256 itemId,
         uint256 amount
-        ) public payable {
+        ) public payable nonReentrant {
             uint price = idToMarketItem[itemId].price;
             uint tokenId = idToMarketItem[itemId].tokenId;
             uint itemLeft = idToMarketItem[itemId].itemLeft;
@@ -104,6 +104,7 @@ contract NFTMarket is  ERC1155Holder{
             idToMarketItem[itemId].itemLeft -= amount ;
             IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount ,"0x");
         }
+        
         
     function fetchMarketItems() public view returns (MarketItem[] memory) {
         uint itemCount = _itemIds;
