@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.25;
 
+import "./ReentrancyGuard.sol";
+import "./TransferHelper.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./TransferHelper.sol";
 
 
-contract vesting is Ownable, ReentrancyGuard{
+contract VestingContract is Ownable, ReentrancyGuard{
     IERC20 public token;
     address public Owner;
     address public teamAddress;
