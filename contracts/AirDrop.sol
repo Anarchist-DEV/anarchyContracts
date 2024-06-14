@@ -47,14 +47,16 @@ contract AirDrop is Ownable, ReentrancyGuard {
     function BuyANRC(uint256 _value) public nonReentrant{
         IERC20 token = IERC20(acceptedToken);
         IERC20 ANRC = IERC20(AnarchyToken);
-        token.transferFrom(msg.sender, owner(), _value);
-        uint256 amount = _value*CF/10^18;//conversion Factor and dividing 10^18
-        ANRC.transferFrom(owner(), msg.sender, amount);  
-
+        token.transferFrom(msg.sender, owner(), _value); 
+        // uint256 amount = _value;//conversion Factor and dividing 10^18
+        ANRC.transferFrom(owner(), msg.sender, _value);
     }
 
     function setAcceptedToken(address _tokenAddress) public onlyOwner nonReentrant {
         acceptedToken = _tokenAddress;
+    }
+    function setANRCToken(address _tokenAddress) public onlyOwner nonReentrant {
+        AnarchyToken = _tokenAddress;
     }
     function setConversionFactor(uint256 _cf) public onlyOwner nonReentrant {
         CF = _cf; //always put value conversion factor * 10^18
