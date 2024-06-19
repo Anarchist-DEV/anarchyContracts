@@ -21,9 +21,9 @@ contract AirDrop is Ownable, ReentrancyGuard {
     constructor(address initialOwner) Ownable(initialOwner) {}
 
     // Define event for ERC20 token transfer
-    event ERC20BulkTransfer(address indexed token, address indexed sender, address indexed recipient, uint256 value);
+    event ERC20Transfer(address indexed token, address indexed sender, address indexed recipient, uint256 value);
     // Define event for ERC1155 token transfer
-    event ERC1155BulkTransfer(address indexed token, address indexed sender, address indexed recipient, uint256 id, uint256 amount);
+    event ERC1155Transfer(address indexed token, address indexed sender, address indexed recipient, uint256 id, uint256 amount);
     address public acceptedToken; //token addres
     address public AnarchyToken; //token address
     uint256 public CF; //conversion factor
@@ -34,14 +34,14 @@ contract AirDrop is Ownable, ReentrancyGuard {
         IERC20 token = IERC20(_token);
 
         token.transferFrom(msg.sender, _to, _value);
-        emit ERC20BulkTransfer(_token, msg.sender, _to, _value);
+        emit ERC20Transfer(_token, msg.sender, _to, _value);
 
         }
 
     function bulkAirDrop1155(address _token, address _to, uint256 _id, uint256 _amount) public onlyOwner nonReentrant{
         IERC1155 token = IERC1155 (_token);
         token.safeTransferFrom(msg.sender, _to, _id, _amount, '');
-        emit ERC1155BulkTransfer(_token, msg.sender, _to, _id, _amount);   
+        emit ERC1155Transfer(_token, msg.sender, _to, _id, _amount);   
     }
 
     function BuyANRC(uint256 _value) public nonReentrant{
