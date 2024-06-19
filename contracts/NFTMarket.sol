@@ -108,7 +108,6 @@ contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard, Ownable{
                 );
 
             IERC20(acceptedToken).transferFrom(msg.sender, idToMarketItem[itemId].owner, totalAmountToPay);
-            idToMarketItem[itemId].owner = msg.sender;
             _itemsSold = _itemsSold + 1;
             idToMarketItem[itemId].itemLeft -= amount ;
             IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount ,"0x");
