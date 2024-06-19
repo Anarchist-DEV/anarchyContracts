@@ -7,23 +7,30 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+interface IERC20 {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+}
 
 
-contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
+contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard, Ownable{
     // using Counters for Counters.Counter;
     uint256 private _itemIds;
     uint256 private _itemsSold;
+    address public acceptedToken; //token addres
+
     
      
-    constructor() {}
+    constructor(address initialOwner) Ownable(initialOwner){}
 
      
      struct MarketItem {
          uint itemId;
          address nftContract;
          uint256 tokenId;
-         address payable seller;
-         address payable owner;
+         address seller;
+         address owner;
          uint256 price;
          uint256 itemLeft
 
@@ -48,14 +55,16 @@ contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
          );
      
     
-    
+    function setAcceptedToken(address _tokenAddress) public onlyOwner nonReentrant { //give ANRC address
+        acceptedToken = _tokenAddress;
+    }
     function createMarketItem (
         address nftContract,
         uint256 tokenId,
         uint256 amount,
-        uint256 price
+        uint256 priceInANRC //per unit 
         ) public payable nonReentrant {
-            require(price > 0, "Price must be greater than 0");
+            require(priceInANRC > 0, "Price must be greater than 0");
             
             _itemIds = _itemIds +1;
             uint256 itemId = _itemIds;
@@ -64,9 +73,9 @@ contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
                 itemId,
                 nftContract,
                 tokenId,
-                payable(msg.sender),
+                msg.sender,
                 payable(address(0)),
-                price,
+                priceInANRC,
                 amount
             );
             
@@ -78,12 +87,12 @@ contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
                 tokenId,
                 msg.sender,
                 address(0),
-                price,
+                priceInANRC,
                 amount
             );
         }
         
-    function createMarketSaleInEth (
+    function createMarketSaleInToken (
         address nftContract,
         uint256 itemId,
         uint256 amount
@@ -91,20 +100,31 @@ contract marketPlaceBoilerPlate is  ERC1155Holder, ReentrancyGuard{
             uint price = idToMarketItem[itemId].price;
             uint tokenId = idToMarketItem[itemId].tokenId;
             uint itemLeft = idToMarketItem[itemId].itemLeft;
-            require(msg.value == amount * price, "Please submit the asking price in order to complete the purchase");
+            uint totalAmountToPay = amount * price;
             require( itemLeft - amount >= 0 , "not enough item left in sale");
             emit MarketItemSold(
                 itemId,
                 msg.sender
                 );
 
-            idToMarketItem[itemId].seller.transfer(msg.value);
-            idToMarketItem[itemId].owner = payable(msg.sender);
+            IERC20(acceptedToken).transferFrom(msg.sender, idToMarketItem[itemId].owner, totalAmountToPay);
+            idToMarketItem[itemId].owner = msg.sender;
             _itemsSold = _itemsSold + 1;
             idToMarketItem[itemId].itemLeft -= amount ;
             IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount ,"0x");
         }
         
+    function cancelSale(
+        address nftContract,
+        uint256 itemId,
+        uint256 amount
+    ) public nonReentrant {
+            require(idToMarketItem[itemId].owner == msg.sender);
+            uint tokenId = idToMarketItem[itemId].tokenId;
+            uint itemLeft = idToMarketItem[itemId].itemLeft;
+            require( itemLeft - amount >= 0 , "not enough item left in sale for cancelling");
+            IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount ,"0x");
+    }
         
     function fetchMarketItems() public view returns (MarketItem[] memory) {
         uint itemCount = _itemIds;
